@@ -757,3 +757,13 @@ def test_oom_score_adj_is_above_the_cc_subprocess_rung(tmp_path):
     logged = log.read_text()
     adj = int(re.search(r"OOM_ADJ:(\d+)", logged).group(1))
     assert adj > 500, f"index adj {adj} does not outrank CC subprocesses at 500"
+
+
+def test_installer_does_not_claim_queue_success_after_writer_failure():
+    text = (_REPO_ROOT / "scripts/install.sh").read_text()
+    queue = text.split("# Queue initial code intelligence indexing", 1)[1].split(
+        "# ═", 1
+    )[0]
+    assert "index_marker.py\" write" in queue
+    assert "|| true" not in queue
+    assert "WARNING: could not queue initial code intelligence index" in queue
